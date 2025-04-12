@@ -51,7 +51,7 @@ resources = {'cmf': load_cie64cmf('./resources/',  regress_mode['target_waveleng
              'null_basis': np.load('./resources/2019-09-12_009_null_basis.npy'),
              'funda_mat': np.load('./resources/2019-09-12_009_fundamental_metamer.npy'),
              'rbf_net': [pickle.load(open('./resources/rbf_icvl_train'+i+'.pkl', 'rb')) for i in ['AB', 'CD', 'AB_aug', 'CD_aug']],
-             'wp_list': loadmat2array('./white_point_data.h5', 'white_spectrum'),
+             'wp_list': loadmat2array('./resources/white_point_data.h5', 'white_spectrum'),
              'name_list': open('./resources/fname_wp.txt').readlines(),
              'crsval_name_list': [open('./resources/fn_icvl_group_'+i+'.txt').readlines() for i in ['A','B','C','D']],
              'anchors': [loadmat2array('./resources/icvl_anchors.mat', 'anchor_'+ i) for i in ['A', 'B']]}
@@ -297,7 +297,7 @@ if __name__ == '__main__':
     advanced_mode['Sparse'] = False  
     regress_mode['type'] = 'rbf'
 
-    train(train_img_list, crsval_mode=1)
+    #train(train_img_list, crsval_mode=1)
     if operation_mode['Test']:
         file_name = initialize_csvfile(directories['results'], regress_mode, advanced_mode, cost_funcs, test_modes)
     
