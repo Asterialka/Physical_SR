@@ -297,7 +297,7 @@ if __name__ == '__main__':
     advanced_mode['Sparse'] = False  
     regress_mode['type'] = 'rbf'
 
-    #train(train_img_list, crsval_mode=1)
+    train(train_img_list, crsval_mode=1)
     if operation_mode['Test']:
         file_name = initialize_csvfile(directories['results'], regress_mode, advanced_mode, cost_funcs, test_modes)
     
