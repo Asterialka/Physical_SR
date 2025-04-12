@@ -7,6 +7,7 @@ from evaluation_metrics import *
 from rbf import RBFNet
 import time
 import matplotlib.pyplot as plt
+import argparse
 
 regress_mode = {'type': 'rbf', # poly, root-poly or rbf
                 'order': 1,
@@ -61,14 +62,12 @@ def train(img_list, crsval_mode=0):
     print("  Training Regression Matrix...")
     train_suffix, _ = generate_crsval_suffix(crsval_mode)
     if advanced_mode['Sparse']:
-        # Loading pretrained sparse data
         assert os.path.isdir(directories['sparse_label']), 'Please run sparse.py first'
         with open(os.path.join(directories['precal'], 'sparse_all_data'+train_suffix+'.pkl'), 'rb') as handle:
             gt_data = pickle.load(handle)
         nearest_neighbors = np.load(os.path.join(directories['precal'], 'sparse_neighbor_idx'+train_suffix+'.npy')).astype(int)
         num_anchors, num_neighbors = nearest_neighbors.shape
         
-        # Training "Multiple" Regression Matrix
         RegMat = []
         for i in range(num_anchors):
             RegMat.append(utils.RegressionMatrix(regress_mode, advanced_mode))
@@ -110,7 +109,6 @@ def validate(img_list, crsval_mode=0):
     RegMat = utils.load_model(directories['models'], regress_mode, advanced_mode, train_suffix)
     
     if advanced_mode['Sparse']:
-        # Loading precollected sparse data
         with open(os.path.join(directories['precal'], 'sparse_all_data'+val_suffix+'.pkl'), 'rb') as handle:
             gt_data = pickle.load(handle)
         nearest_neighbors = np.load(os.path.join(directories['precal'], 'sparse_neighbor_idx'+val_suffix+'.npy')).astype(int)
@@ -158,10 +156,9 @@ def test_git(img_list, crsval_mode=0, file_name=()):
     print("  Testing...")
     train_suffix, val_suffix = generate_crsval_suffix(crsval_mode)  
     
-    # Инициализация структур для хранения суммарных метрик
     num_exposures = len(advanced_mode['Exposure'])
-    num_metrics = 8  # mrae, dE00, dE00_A, dE00_D65, dE00_sony, dE00_nikon, dE00_canon, nse
-    total_metrics = np.zeros((num_exposures, num_metrics, 2))  # [exposure][metric][mean, pt99.9]
+    num_metrics = 8  
+    total_metrics = np.zeros((num_exposures, num_metrics, 2))  
     img_count = 0
     
     if regress_mode['type'] == 'HSCNN-R':
@@ -207,7 +204,6 @@ def test_git(img_list, crsval_mode=0, file_name=()):
                         metric_value = tmode_func(cost)
                         write_row.append(metric_value)
                         
-                        # Для каждой метрики сохраняем только mean и pt99.9 (tmode_idx 0 и 1)
                         if tmode_idx < 2:
                             total_metrics[exp_idx, cost_idx, tmode_idx] += metric_value
 
@@ -249,7 +245,6 @@ def test_git(img_list, crsval_mode=0, file_name=()):
                         metric_value = tmode_func(cost)
                         write_row.append(metric_value)
                         
-                        # Для каждой метрики сохраняем только mean и pt99.9 (tmode_idx 0 и 1)
                         if tmode_idx < 2:
                             total_metrics[exp_idx, cost_idx, tmode_idx] += metric_value
             
@@ -263,7 +258,6 @@ def test_git(img_list, crsval_mode=0, file_name=()):
                         print(f"{cost_name}: Mean = {mean_val:.4f}, Pt99.9 = {pt_val:.4f}")
                 write2csvfile(file_name, write_row)
     
-    # Вывод средних метрик по всем изображениям
     if img_count > 0:
         print("\nСредние метрики по всему тесту:")
         total_metrics /= img_count
@@ -274,13 +268,12 @@ def test_git(img_list, crsval_mode=0, file_name=()):
                 pt_val = total_metrics[exp_idx, cost_idx, 1]
                 print(f"{cost_name}: Mean = {mean_val:.4f}, Pt99.9 = {pt_val:.4f}")
         
-        # Запись средних метрик в файл
         if len(file_name):
             avg_row = ["Average"]
             for exp_idx in range(num_exposures):
                 for cost_idx in range(num_metrics):
-                    avg_row.append(total_metrics[exp_idx, cost_idx, 0])  # mean
-                    avg_row.append(total_metrics[exp_idx, cost_idx, 1])  # pt99.9
+                    avg_row.append(total_metrics[exp_idx, cost_idx, 0]) 
+                    avg_row.append(total_metrics[exp_idx, cost_idx, 1])  
             write2csvfile(file_name, avg_row)
 
 if __name__ == '__main__':
@@ -297,7 +290,8 @@ if __name__ == '__main__':
     advanced_mode['Sparse'] = False  
     regress_mode['type'] = 'rbf'
 
-    #train(train_img_list, crsval_mode=1)
+    train(train_img_list, crsval_mode=1)
+    
     if operation_mode['Test']:
         file_name = initialize_csvfile(directories['results'], regress_mode, advanced_mode, cost_funcs, test_modes)
     
