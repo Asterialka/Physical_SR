@@ -1,23 +1,12 @@
 import os
 import h5py
 import numpy as np
-from tqdm import tqdm  # для прогресс-бара (установите через: pip install tqdm)
+from tqdm import tqdm 
 
 def optimize_h5_file(input_path, output_path, compression="gzip", compression_opts=4):
-    """
-    Оптимизирует HDF5 файл, применяя сжатие ко всем датасетам внутри.
-    
-    Параметры:
-        input_path (str): Путь к исходному файлу .h5.
-        output_path (str): Путь для сохранения оптимизированного файла.
-        compression (str): Метод сжатия ('gzip', 'lzf').
-        compression_opts (int): Уровень сжатия (1-9 для gzip).
-    """
     with h5py.File(input_path, 'r') as f_in, h5py.File(output_path, 'w') as f_out:
-        # Рекурсивно копируем все датасеты и группы
         def copy_item(name, obj):
             if isinstance(obj, h5py.Dataset):
-                # Копируем с сжатием
                 f_out.create_dataset(
                     name,
                     data=obj[:],
@@ -26,20 +15,10 @@ def optimize_h5_file(input_path, output_path, compression="gzip", compression_op
                     chunks=True if obj.chunks is not None else None
                 )
             elif isinstance(obj, h5py.Group):
-                # Создаем группу
                 f_out.create_group(name)
         f_in.visititems(copy_item)
 
 def process_folder(folder_path, compression="gzip", backup=False):
-    """
-    Обрабатывает все .h5 файлы в папке (и подпапках), оптимизируя их.
-    
-    Параметры:
-        folder_path (str): Путь к папке с файлами .h5.
-        compression (str): Метод сжатия.
-        backup (bool): Создавать ли резервную копию исходного файла.
-    """
-    # Ищем все .h5 файлы рекурсивно
     h5_files = []
     for root, _, files in os.walk(folder_path):
         for file in files:
@@ -54,20 +33,16 @@ def process_folder(folder_path, compression="gzip", backup=False):
     
     for file_path in tqdm(h5_files, desc="Оптимизация файлов"):
         try:
-            # Временный файл для безопасности
             temp_path = file_path + ".optimized"
-            
-            # Оптимизируем
+        
             optimize_h5_file(file_path, temp_path, compression)
             
-            # Резервная копия (если нужно)
             if backup:
                 backup_path = file_path + ".bak"
                 if os.path.exists(backup_path):
                     os.remove(backup_path)
                 os.rename(file_path, backup_path)
             
-            # Заменяем исходный файл
             os.rename(temp_path, file_path)
             
         except Exception as e:
