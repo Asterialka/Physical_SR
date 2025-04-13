@@ -2,6 +2,8 @@
 In my project, I tried experimenting with the physically plausible spectrum method on various machine learning models. 
 Namely, I initially ran it on regression and calculated all the metrics, then tested it on a perceptron and completed the training on Multi-stage Spectral-wise Transformer for Efficient Spectral Reconstruction. 
 I also applied all the weights that I received during the training and the metrics. More details on how to train and test are described below.
+#### A note for those who have little memory:
+Spectral image format files .h5s have a very large weight, and therefore, for more convenient interaction with them, you can use the script for compressing them, which is located: `./compression_h5_files.py`
 ## MST++: Multi-stage Spectral-wise Transformer for Efficient Spectral Reconstruction
 Network architecture:  
 ![Схема](images/MST.png)
@@ -94,7 +96,7 @@ You can download KAUST dataset from [KAUST](https://repository.kaust.edu.sa/item
 ### 1. Training and testing
 ```python
 cd Regression 
- python3 main.py #Для обучения и тестирования кода`
+ python3 main.py # Для обучения и тестирования кода
 ```
 ### 2. My results
 Without Physically Plausible: 
@@ -123,3 +125,37 @@ With Physically Plausible:
 
 You can find your learning outcomes in the folder `Regression/results/.`  
 And also download the weights I trained using the link: [Google disk](https://drive.google.com/drive/folders/1I9KrseAVy11SaIQ8tHVo_ygF-ZnAfwBd?usp=sharing) 
+
+## Perceptron
+### 1. Architecture
+My perceptron has the scheme shown below:  
+```mermaid
+%%{init: {'theme': 'dark', 'fontFamily': 'Arial'}}%%
+graph TD
+    A[Input Layer] --> B[Linear 1]
+    B --> C[ReLU 1]
+    C --> D[Linear 2]
+    D --> E[ReLU 2]
+    E --> F[Linear 3]
+    F --> G[Output]
+```
+### 2. Training and testing model
+You can download KAUST dataset from [KAUST](https://repository.kaust.edu.sa/items/891485b4-11d2-4dfc-a4a6-69a4912c05f1)  
+- Place the training spectral images to `/Rerceptron/dataset/.`  
+- Place the test spectral images to `/Perceptron/test_images/.`
+```python
+cd Perceptron 
+ python3 train_model # Для обучения модели
+ python3 test_model # Для тестирования модели
+```
+### 3. My results
+| Metric/Model | Perceptron (50 epochs) |
+| ----------- | ----------- |
+| MRAE    | 0.21   |
+| RMSE    | 10.08   |
+| PSNR    | 29.85   |
+| dE00    | 0.00  |
+
+You can download weights - [Google disk](https://drive.google.com/file/d/1kpivekMCcjcqcJwKVYexmUUC_0s6G8Oh/view?usp=sharing)  
+He also makes a final visualization, here is an example of it:  
+![Визуализация_1](images/example_perceptron.jpg)
